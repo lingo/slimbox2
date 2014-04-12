@@ -14,7 +14,7 @@
 	preload = {}, preloadPrev = new Image(), preloadNext = new Image(),
 
 	// DOM elements
-	overlay, center, image, sizer, prevLink, nextLink, bottomContainer, bottom, caption, number;
+	overlay, center, image, sizer, prevLink, nextLink, bottomContainer, bottom, caption, number, targetLink;
 
 	/*
 		Initialization
@@ -33,9 +33,11 @@
 		image = $('<div id="lbImage" />').appendTo(center).append(
 			sizer = $('<div style="position: relative;" />').append([
 				prevLink = $('<a id="lbPrevLink" href="#" />').click(previous)[0],
-				nextLink = $('<a id="lbNextLink" href="#" />').click(next)[0]
+				nextLink = $('<a id="lbNextLink" href="#" />').click(next)[0],
+				targetLink = $('<a id="lbTargetLink" href="#" />')[0]
 			])[0]
 		)[0];
+		$([prevLink,nextLink]).css('z-index', '10');
 
 		bottom = $('<div id="lbBottom" />').appendTo(bottomContainer).append([
 			$('<a id="lbCloseLink" href="#" />').click(close)[0],
@@ -65,7 +67,8 @@
 			counterText: "Image {x} of {y}",	// Translate or change as you wish, or set it to false to disable counter text for image groups
 			closeKeys: [27, 88, 67],		// Array of keycodes to close Slimbox, default: Esc (27), 'x' (88), 'c' (67)
 			previousKeys: [37, 80],			// Array of keycodes to navigate to the previous image, default: Left arrow (37), 'p' (80)
-			nextKeys: [39, 78]			// Array of keycodes to navigate to the next image, default: Right arrow (39), 'n' (78)
+			nextKeys: [39, 78],			// Array of keycodes to navigate to the next image, default: Right arrow (39), 'n' (78)
+			linking: false				// Whether zoomed-image will be clickable, or only prev/next sections.
 		}, _options);
 
 		// The function is called for a single image, with URL and Title as first two arguments
@@ -92,14 +95,14 @@
 	/*
 		options:	Optional options object, see jQuery.slimbox()
 		linkMapper:	Optional function taking a link DOM element and an index as arguments and returning an array containing 2 elements:
-				the image URL and the image caption (may contain HTML)
+				the image URL and the image caption (may contain HTML), and target URL if linking option is set.
 		linksFilter:	Optional function taking a link DOM element and an index as arguments and returning true if the element is part of
 				the image collection that will be shown on click, false if not. "this" refers to the element that was clicked.
 				This function must always return true when the DOM element argument is "this".
 	*/
 	$.fn.slimbox = function(_options, linkMapper, linksFilter) {
 		linkMapper = linkMapper || function(el) {
-			return [el.href, el.title];
+			return [el.href, el.title, null];
 		};
 
 		linksFilter = linksFilter || function() {
@@ -191,8 +194,16 @@
 	function animateBox() {
 		center.className = "";
 		$(image).css({backgroundImage: "url(" + activeURL + ")", visibility: "hidden", display: ""});
-		$(sizer).width(preload.width);
-		$([sizer, prevLink, nextLink]).height(preload.height);
+		$([sizer,targetLink]).width(preload.width);
+		$([sizer,targetLink,prevLink,nextLink]).height(preload.height);
+		if (options.linking) {
+			$([prevLink,nextLink]).width('10%');
+			$(targetLink).css({position: 'absolute'}).show();
+			$(targetLink).attr('href', images[activeImage][2]);
+		} else {
+			targetLink.hide();
+			$([prevLink,nextLink]).height(preload.height);
+		}
 
 		$(caption).html(images[activeImage][1] || "");
 		$(number).html((((images.length > 1) && options.counterText) || "").replace(/{x}/, activeImage + 1).replace(/{y}/, images.length));
