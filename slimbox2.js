@@ -1,0 +1,1 @@
+src/slimbox2.js
