@@ -101,6 +101,18 @@
 				This function must always return true when the DOM element argument is "this".
 	*/
 	$.fn.slimbox = function(_options, linkMapper, linksFilter) {
+		if (typeof _options === 'string') {
+			// send commands to existing slimbox
+			if (_options === 'open') {
+				var slimbox = this.data('slimbox2');
+				if (slimbox) {
+					if (slimbox.linksFilter(this)) {
+						var data = slimbox.linkMapper(this[0]);
+						$.slimbox([data], 0, slimbox.options);
+					}
+				}
+			}
+		}
 		linkMapper = linkMapper || function(el) {
 			return [el.href, el.title, null];
 		};
@@ -110,6 +122,7 @@
 		};
 
 		var links = this;
+		links.data('slimbox2', { linkMapper: linkMapper, linksFilter: linksFilter, options: _options });
 
 		return links.unbind("click").click(function() {
 			// Build the list of images that will be displayed
