@@ -201,7 +201,7 @@
 			$(targetLink).css({position: 'absolute'}).show();
 			$(targetLink).attr('href', images[activeImage][2]);
 		} else {
-			targetLink.hide();
+			$(targetLink).hide();
 			$([prevLink,nextLink]).height(preload.height);
 		}
 
