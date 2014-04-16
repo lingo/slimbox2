@@ -37,7 +37,7 @@
 				targetLink = $('<a id="lbTargetLink" href="#" />')[0]
 			])[0]
 		)[0];
-		$([prevLink,nextLink]).css('z-index', '10');
+		$([prevLink,nextLink]).css({ 'z-index': '10', 'min-width': '6em' });
 
 		bottom = $('<div id="lbBottom" />').appendTo(bottomContainer).append([
 			$('<a id="lbCloseLink" href="#" />').click(close)[0],
@@ -193,16 +193,30 @@
 
 	function animateBox() {
 		center.className = "";
-		$(image).css({backgroundImage: "url(" + activeURL + ")", visibility: "hidden", display: ""});
-		$([sizer,targetLink]).width(preload.width);
-		$([sizer,targetLink,prevLink,nextLink]).height(preload.height);
+		var width, height;
+		var maxHeight, maxWidth;
+		width  = preload.width;
+		height = preload.height;
+		maxHeight = (options.fullscreen ? screen.height : $(window).height()) * 0.95;
+		maxWidth  = (options.fullscreen ? screen.width : $(window).width())  * 0.95;
+		if (height >= maxHeight) {
+			width  = width / height * maxHeight;
+			height = maxHeight;
+		} else if (width >= maxWidth) {
+			height = height / width * maxWidth;
+			width  = maxWidth;
+		}
+
+		$(image).css({backgroundImage: "url(" + activeURL + ")", visibility: "hidden", display: "", backgroundSize: "cover"});
+		$([sizer,targetLink]).width(width);
+		$([sizer,targetLink,prevLink,nextLink]).height(height);
 		if (options.linking) {
 			$([prevLink,nextLink]).width('10%');
 			$(targetLink).css({position: 'absolute'}).show();
 			$(targetLink).attr('href', images[activeImage][2]);
 		} else {
-			targetLink.hide();
-			$([prevLink,nextLink]).height(preload.height);
+			$(targetLink).hide();
+			$([prevLink,nextLink]).height(height);
 		}
 
 		$(caption).html(images[activeImage][1] || "");
